@@ -3,38 +3,22 @@ pipeline {
 
     stages {
 
-        stage('Create Virtual Environment') {
+        stage('Build Docker Image') {
             steps {
-                sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                '''
+                sh 'docker build -t disaster-tests .'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Run Tests in Docker') {
             steps {
-                sh '''
-                    . venv/bin/activate
-                    pip install -r requirements.txt
-                '''
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh '''
-                    . venv/bin/activate
-                    python -m pytest -v
-                '''
+                sh 'docker run --rm disaster-tests'
             }
         }
     }
 
     post {
         always {
-            echo "Tests completed"
+            echo "Docker tests completed"
         }
     }
 }

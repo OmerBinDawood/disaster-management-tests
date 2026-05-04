@@ -1,10 +1,21 @@
-FROM python:3.10
-
-RUN apt-get update && apt-get install -y chromium chromium-driver
+FROM python:3.11-slim
 
 WORKDIR /app
+
+# install system dependencies for selenium
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    unzip \
+    chromium \
+    chromium-driver
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . .
 
-RUN pip install -r requirements.txt
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROMEDRIVER=/usr/bin/chromedriver
 
-CMD ["pytest", "--junitxml=results.xml"]
+CMD ["pytest", "-v"]
