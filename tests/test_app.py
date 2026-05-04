@@ -11,8 +11,8 @@ def get_driver():
 
 def test_homepage():
     driver = get_driver()
-    driver.get("http://example.com")  # replace later with your app URL
+    driver.get("http://13.51.240.6:3000/")  # replace later with your app URL
 
-    assert "Example" in driver.title
+    assert "Disaster" in driver.page_source
 
     driver.quit()
