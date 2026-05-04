@@ -23,39 +23,46 @@ pipeline {
     }
 
     post {
-    always {
-        script {
-            def email = ""
+        always {
+            script {
 
-            try {
-                email = sh(script: "git log -1 --pretty=%ae", returnStdout: true).trim()
-            } catch (Exception e) {
-                email = "default-email@example.com"
-            }
+                // BEST RELIABLE METHOD IN JENKINS SCM JOBS
+                def changeSet = currentBuild.changeSets
 
-            echo "Sending results to: ${email}"
+                def email = "unknown"
 
-            emailext (
-                to: email,
-                subject: "Jenkins CI Results - Disaster Tests (${currentBuild.result})",
-                body: """
-    Hello,
+                if (changeSet != null && changeSet.size() > 0) {
+                    def entries = changeSet[0].items
+                    if (entries != null && entries.size() > 0) {
+                        email = entries[0].authorEmail
+                    }
+                }
 
-    Build Status: ${currentBuild.result}
+                echo "Sending email to commit author: ${email}"
 
-    Project: Disaster Management Tests
-    Build URL: ${env.BUILD_URL}
+                emailext (
+                    to: email,
+                    subject: "Jenkins CI Results - $BUILD_STATUS",
+                    body: """
+Hello,
 
-    Check logs for full details.
+Your pushed commit triggered the Jenkins pipeline.
 
-    Regards,
-    Jenkins CI System
-    """,
+Project: Disaster Management Tests
+Build Number: $BUILD_NUMBER
+Status: $BUILD_STATUS
+
+Check details here:
+$BUILD_URL
+
+Regards,
+Jenkins CI
+""",
                     attachLog: true
                 )
             }
 
-            echo "Docker tests completed"
+            echo "Pipeline completed"
         }
     }
 }
