@@ -23,38 +23,46 @@ pipeline {
     }
 
     post {
-    always {
-        script {
+        always {
+            script {
 
-            // safer GitHub commit email extraction
-            def email = sh(
-                script: "git log -1 --pretty=format:'%ae'",
-                returnStdout: true
-            ).trim()
+                // safer fallback approach for email
+                def email = "dev.devneuron@gmail.com"
 
-            echo "Sending email to: ${email}"
+                try {
+                    email = sh(
+                        script: "git log -1 --pretty=format:%ae",
+                        returnStdout: true
+                    ).trim()
+                } catch (Exception e) {
+                    echo "Could not extract git email, using fallback"
+                }
 
-            emailext (
-                to: email,
-                subject: "Jenkins CI Results - Disaster Tests #${env.BUILD_NUMBER}",
-                body: """
-    Hello,
+                echo "Sending email to: ${email}"
 
-    Pipeline completed.
+                emailext (
+                    to: email,
+                    subject: "Jenkins CI Results - Disaster Tests #${env.BUILD_NUMBER}",
+                    body: """
+Hello,
 
-    Project: Disaster Management Tests
-    Build Status: ${currentBuild.currentResult}
+Pipeline has completed.
 
-    Check details: ${env.BUILD_URL}
+Project: Disaster Management Tests
+Build Number: ${env.BUILD_NUMBER}
+Build Status: ${currentBuild.currentResult}
 
-    Regards,
-    CI Pipeline
-    """,
-                    attachLog: true
+View details: ${env.BUILD_URL}
+
+Regards,
+Jenkins CI Pipeline
+""",
+                    attachLog: true,
+                    mimeType: 'text/plain'
                 )
             }
 
-            echo "Pipeline completed"
+            echo "Pipeline finished"
         }
     }
 }
