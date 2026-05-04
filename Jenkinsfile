@@ -3,12 +3,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
-            steps {
-                git 'https://github.com/OmerBinDawood/disaster-management-tests.git'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 sh '''
@@ -18,14 +12,11 @@ pipeline {
             }
         }
 
-        stage('Run Selenium Tests') {
+        stage('Run Tests') {
             steps {
-                sh '''
-                    python -m pytest -v
-                '''
+                sh 'python -m pytest -v'
             }
         }
-
     }
 
     post {
