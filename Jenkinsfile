@@ -7,14 +7,14 @@ pipeline {
             steps {
                 sh '''
                     python3 -m pip install --upgrade pip
-                    pip install -r requirements.txt
+                    pip3 install -r requirements.txt
                 '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'python -m pytest -v'
+                sh 'python3 -m pytest -v'
             }
         }
     }
