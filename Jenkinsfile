@@ -25,35 +25,22 @@ pipeline {
     post {
         always {
             script {
+                def email = "default-recipient@example.com"
 
-                // BEST RELIABLE METHOD IN JENKINS SCM JOBS
-                def changeSet = currentBuild.changeSets
-
-                def email = "unknown"
-
-                if (changeSet != null && changeSet.size() > 0) {
-                    def entries = changeSet[0].items
-                    if (entries != null && entries.size() > 0) {
-                        email = entries[0].authorEmail
-                    }
-                }
-
-                echo "Sending email to commit author: ${email}"
+                echo "Build completed successfully"
 
                 emailext (
                     to: email,
-                    subject: "Jenkins CI Results - $BUILD_STATUS",
+                    subject: "Jenkins CI Results - Disaster Tests - Build #${env.BUILD_NUMBER}",
                     body: """
 Hello,
 
-Your pushed commit triggered the Jenkins pipeline.
+Your pipeline has completed.
 
 Project: Disaster Management Tests
-Build Number: $BUILD_NUMBER
-Status: $BUILD_STATUS
+Build Status: ${currentBuild.currentResult}
 
-Check details here:
-$BUILD_URL
+Check logs: ${env.BUILD_URL}
 
 Regards,
 Jenkins CI
@@ -61,8 +48,6 @@ Jenkins CI
                     attachLog: true
                 )
             }
-
-            echo "Pipeline completed"
         }
     }
 }
