@@ -23,27 +23,34 @@ pipeline {
     }
 
     post {
-        always {
-            script {
-                // Get email of last commit author (dynamic sender)
-                def email = sh(script: "git log -1 --pretty=%ae", returnStdout: true).trim()
+    always {
+        script {
+            def email = ""
 
-                echo "Sending results to: ${email}"
+            try {
+                email = sh(script: "git log -1 --pretty=%ae", returnStdout: true).trim()
+            } catch (Exception e) {
+                email = "default-email@example.com"
+            }
 
-                emailext (
-                    to: email,
-                    subject: "Jenkins CI Results - Disaster Tests",
-                    body: """
-Hello,
+            echo "Sending results to: ${email}"
 
-Your Selenium test pipeline has completed.
+            emailext (
+                to: email,
+                subject: "Jenkins CI Results - Disaster Tests (${currentBuild.result})",
+                body: """
+    Hello,
 
-Project: Disaster Management Tests
-Status: Completed (check Jenkins console for pass/fail details)
+    Build Status: ${currentBuild.result}
 
-Regards,
-Jenkins CI System
-""",
+    Project: Disaster Management Tests
+    Build URL: ${env.BUILD_URL}
+
+    Check logs for full details.
+
+    Regards,
+    Jenkins CI System
+    """,
                     attachLog: true
                 )
             }
