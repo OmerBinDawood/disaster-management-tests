@@ -23,31 +23,38 @@ pipeline {
     }
 
     post {
-        always {
-            script {
-                def email = "default-recipient@example.com"
+    always {
+        script {
 
-                echo "Build completed successfully"
+            // safer GitHub commit email extraction
+            def email = sh(
+                script: "git log -1 --pretty=format:'%ae'",
+                returnStdout: true
+            ).trim()
 
-                emailext (
-                    to: email,
-                    subject: "Jenkins CI Results - Disaster Tests - Build #${env.BUILD_NUMBER}",
-                    body: """
-Hello,
+            echo "Sending email to: ${email}"
 
-Your pipeline has completed.
+            emailext (
+                to: email,
+                subject: "Jenkins CI Results - Disaster Tests #${env.BUILD_NUMBER}",
+                body: """
+    Hello,
 
-Project: Disaster Management Tests
-Build Status: ${currentBuild.currentResult}
+    Pipeline completed.
 
-Check logs: ${env.BUILD_URL}
+    Project: Disaster Management Tests
+    Build Status: ${currentBuild.currentResult}
 
-Regards,
-Jenkins CI
-""",
+    Check details: ${env.BUILD_URL}
+
+    Regards,
+    CI Pipeline
+    """,
                     attachLog: true
                 )
             }
+
+            echo "Pipeline completed"
         }
     }
 }
