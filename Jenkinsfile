@@ -27,7 +27,7 @@ pipeline {
             script {
 
                 // safer fallback approach for email
-                def email = "dev.devneuron@gmail.com"
+                def email = "qasim.malik@gmail.com"
 
                 try {
                     email = sh(
